@@ -1,0 +1,19 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+run = "python manage.py runserver"
+migrate = "python manage.py migrate"
+
+[tool.poetry]
+name = "task_manager_backend"
+description = "Task manager backend"
+authors = ["Higor de Faria <higor@poli.ufrj.br>"]
+version = "0.1.0"
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11.7"
+django = "*"
