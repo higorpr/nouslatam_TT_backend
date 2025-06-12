@@ -51,6 +51,8 @@ INSTALLED_APPS = [
 
     # Local apps
     'tasks.apps.TasksConfig',
+    'users.apps.UsersConfig',
+    'quotes.apps.QuotesConfig',
 ]
 
 MIDDLEWARE = [
@@ -142,8 +144,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS CONFIG
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Next.JS Port during development
+    os.getenv('FRONTEND_DOMAIN'),  # Next.JS Port during development
 ]
+
+FRONTEND_DOMAIN = os.getenv('FRONTEND_DOMAIN', 'http://localhost:3000')
 
 # REST FRAMEWORK CONFIG
 REST_FRAMEWORK = {
@@ -203,3 +207,23 @@ SPECTACULAR_SETTINGS = {
     },
     'SERVE_INCLUDE_SCHEMA': False,
 }
+
+# EMAIL CONFIG (SENDGRID)
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+
+# Deactivate sendgrid click tracking
+SENDGRID_TRACK_CLICKS_HTML = False
+SENDGRID_TRACK_CLICKS_PLAIN = False
+
+# IMPORTANTE: Use um e-mail que você verificou como remetente na sua conta do SendGrid
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
+
+# AUTH CONFIG
+AUTHENTICATION_BACKENDS = [
+    'users.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]

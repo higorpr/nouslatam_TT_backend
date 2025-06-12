@@ -3,9 +3,7 @@ from .models import Task
 from .serializers import TaskSerializer
 
 class TaskViewSet(viewsets.ModelViewSet):
-    """"
-    API endpoint that allows tasks to be viewed and/or edited.
-    """
+    
     
     serializer_class = TaskSerializer
     
