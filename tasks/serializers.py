@@ -13,3 +13,13 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'description', 'status',
                   'due_date', 'created_at', 'updated_at', 'owner')
         read_only_fields = ['created_at', 'updated_at']
+        
+class DashboardStatsSerializer(serializers.Serializer):
+    """
+    Describes the dashboard stats
+    """
+    total_tasks = serializers.IntegerField(read_only=True)
+    completed_tasks = serializers.IntegerField(read_only=True)
+    pending_tasks = serializers.IntegerField(read_only=True)
+    archived_tasks = serializers.IntegerField(read_only=True)
+        

@@ -1,12 +1,14 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
-from .views import TaskViewSet
+from .views import TaskViewSet, DashboardStatsView
 
 app_name = 'tasks'
 
-router = DefaultRouter()
-router.register(r'tasks', TaskViewSet, basename='task')
+router = DefaultRouter(trailing_slash=False)
+router.register(r'', TaskViewSet, basename='task')
 
 urlpatterns = [
-    path('',include(router.urls))
+    re_path(r'^dashboard/?$', DashboardStatsView.as_view(),
+         name='dashboard-stats'),  # Dashboard route
+    path('', include(router.urls))  # All basic task CRUD
 ]
