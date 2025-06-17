@@ -19,16 +19,29 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(BASE_DIR / '.env')
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
+
+if DEBUG:
+    print("--- Running in DEBUG mode, attempting to load .env file. ---")
+    load_dotenv(BASE_DIR / '.env')
+else:
+    print("--- Running in PRODUCTION mode, reading environment variables. ---")
+
+# --- DEBUG LOGS ---
+# Adicionamos logs para verificar as variáveis de ambiente no Railway.
+# Não imprimimos o valor real da chave por segurança, apenas se ela foi encontrada.
+print(f"DEBUG setting is: {DEBUG}")
+print(f"SECRET_KEY found: {bool(os.getenv('SECRET_KEY'))}")
+print(f"DATABASE_URL found: {bool(os.getenv('DATABASE_URL'))}")
+print(f"ALLOWED_HOSTS value: {os.getenv('ALLOWED_HOSTS')}")
+# --- END DEBUG LOGS ---
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG')
 
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
