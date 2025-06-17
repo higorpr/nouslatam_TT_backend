@@ -31,18 +31,19 @@ else:
 # DEBUG deve ser False em produção.
 DEBUG = not IS_PRODUCTION
 
-# ALLOWED_HOSTS é crucial para a segurança.
-# O Render fornece o domínio público na variável RENDER_EXTERNAL_HOSTNAME.
-ALLOWED_HOSTS =
+ALLOWED_HOSTS = []
+
 if IS_PRODUCTION:
     RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
     if RENDER_EXTERNAL_HOSTNAME:
         ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-# Adicione seus domínios personalizados a partir de uma variável de ambiente
-# Ex: "www.meusite.com,api.meusite.com"
+
 ALLOWED_HOSTS_CUSTOM = os.environ.get('ALLOWED_HOSTS_CUSTOM', '').split(',')
-ALLOWED_HOSTS.extend()
+
+for host in ALLOWED_HOSTS_CUSTOM:
+    if host:
+        ALLOWED_HOSTS.append(host)
 
 # Se estiver em desenvolvimento, permita localhost
 if not IS_PRODUCTION:
