@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# --- Seção de Depuração ---
+# Imprime as variáveis de ambiente para que possamos vê-las nos logs do Railway.
+echo "--- Verificando variáveis de ambiente ---"
+echo "Valor de DB_HOST recebido: [${DB_HOST}]"
+echo "Valor de DB_PORT recebido: [${DB_PORT}]"
+echo "--- Fim da verificação ---"
+
 # Lê as variáveis de ambiente, com fallbacks para o ambiente local
 DB_HOST_TO_CHECK=${DB_HOST:-db}
 DB_PORT_TO_CHECK=${DB_PORT:-5432}
