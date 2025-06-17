@@ -19,34 +19,38 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+# O Render define a variável de ambiente RENDER, podemos usá-la para detectar produção.
+IS_PRODUCTION = 'RENDER' in os.environ
 
-if DEBUG:
-    print("--- Running in DEBUG mode, attempting to load .env file. ---")
+if not IS_PRODUCTION:
+    print("--- Running in LOCAL mode, loading.env file. ---")
     load_dotenv(BASE_DIR / '.env')
 else:
-    print("--- Running in PRODUCTION mode, reading environment variables. ---")
+    print("--- Running in PRODUCTION mode on Render. ---")
 
-# --- DEBUG LOGS ---
-# Adicionamos logs para verificar as variáveis de ambiente no Railway.
-# Não imprimimos o valor real da chave por segurança, apenas se ela foi encontrada.
-print(f"DEBUG setting is: {DEBUG}")
-print(f"SECRET_KEY found: {bool(os.getenv('SECRET_KEY'))}")
-print(f"DATABASE_URL found: {bool(os.getenv('DATABASE_URL'))}")
-print(f"ALLOWED_HOSTS value: {os.getenv('ALLOWED_HOSTS')}")
-# --- END DEBUG LOGS ---
+# DEBUG deve ser False em produção.
+DEBUG = not IS_PRODUCTION
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# ALLOWED_HOSTS é crucial para a segurança.
+# O Render fornece o domínio público na variável RENDER_EXTERNAL_HOSTNAME.
+ALLOWED_HOSTS =
+if IS_PRODUCTION:
+    RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_EXTERNAL_HOSTNAME:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# Adicione seus domínios personalizados a partir de uma variável de ambiente
+# Ex: "www.meusite.com,api.meusite.com"
+ALLOWED_HOSTS_CUSTOM = os.environ.get('ALLOWED_HOSTS_CUSTOM', '').split(',')
+ALLOWED_HOSTS.extend()
+
+# Se estiver em desenvolvimento, permita localhost
+if not IS_PRODUCTION:
+    ALLOWED_HOSTS.extend(['127.0.0.1', 'localhost'])
+
+print(f"ALLOWED_HOSTS configured to: {ALLOWED_HOSTS}")
+
 SECRET_KEY = os.getenv('SECRET_KEY')
-
-
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -55,6 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.staticfiles',
 
     # Third party apps
@@ -106,21 +111,13 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-if 'DATABASE_URL' in os.environ:
-    DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600, ssl_require=False)
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': os.getenv('DB_ENGINE'),
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT'),
-        }
-    }
+DATABASES = {
+    'default': dj_database_url.config(
+        # O Render pode exigir SSL, então é melhor não desativá-lo.
+        # dj_database_url lida com a flag?ssl=true na URL automaticamente.
+        conn_max_age=600,
+    )
+}
 
 
 # Password validation
@@ -160,15 +157,29 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS CONFIG
-CORS_ALLOWED_ORIGINS = [
-    os.getenv('FRONTEND_DOMAIN'),  # Next.JS Port during development
-]
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+
+# CSRF Trusted Origins (Importante para segurança)
+# O Render usa https, então precisamos confiar na origem.
+CSRF_TRUSTED_ORIGINS =
+if IS_PRODUCTION:
+    RENDER_EXTERNAL_URL = os.environ.get('RENDER_EXTERNAL_URL')
+    if RENDER_EXTERNAL_URL:
+        CSRF_TRUSTED_ORIGINS.append(RENDER_EXTERNAL_URL)
+
+# Adicione seus domínios personalizados aqui também, com https
+CSRF_TRUSTED_ORIGINS_CUSTOM = os.environ.get('CSRF_TRUSTED_ORIGINS_CUSTOM', '').split(',')
+CSRF_TRUSTED_ORIGINS.extend()
+
+print(f"CSRF_TRUSTED_ORIGINS configured to: {CSRF_TRUSTED_ORIGINS}")
 
 FRONTEND_DOMAIN = os.getenv('FRONTEND_DOMAIN', 'http://localhost:3000')
 
