@@ -4,23 +4,22 @@ FROM python:3.11
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Define working directory
+# Define a pasta de trabalho
 WORKDIR /app
 
-# Install linux dependencies
+# Instala as dependências do sistema, incluindo netcat
 RUN apt-get update && apt-get install -y build-essential libpq-dev netcat-openbsd --no-install-recommends
 
-# Install python dependencies from requirements.txt
-COPY requirements.txt .
+# Instala as dependências Python
+COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy env to container
+# Copia todo o projeto
 COPY . .
 
-# Expose port 8000 (Gunicorn)
+# Expõe a porta
 EXPOSE 8000
 
-ENTRYPOINT [ "/app/entrypoint.sh" ]
-
-# Run app
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "core.wsgi:application"]
+# PONTO CHAVE: Define nosso script como o ponto de entrada, executado via shell.
+# Isso garante que a sintaxe do shell ($VAR, while, etc.) funcione.
+ENTRYPOINT ["sh", "/app/entrypoint.sh"]
