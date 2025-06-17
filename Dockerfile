@@ -18,5 +18,5 @@ COPY . .
 # Expõe a porta que o Gunicorn vai usar
 EXPOSE 8000
 
-ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "core.wsgi:application"]
+# ENTRYPOINT ["/app/entrypoint.sh"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "core.wsgi:application"]
