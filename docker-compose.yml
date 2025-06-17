@@ -1,27 +1,24 @@
 version: '3.8'
 
 services:
-# Postgres DB Service
   db:
     image: postgres:15-alpine
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - "5432"
+    # O env_file carrega as credenciais do banco para este serviço
     env_file:
       - .env
 
-# Django Server Service
   web:
     build: .
+    # O comando é gerenciado pelo ENTRYPOINT no Dockerfile, não precisamos dele aqui.
     volumes:
       - .:/app
     ports:
-      - "8001:8000"
-    environment:
-      - DB_HOST=db
+      - "8001:8000" # Mapeia a porta 8001 do seu computador para a 8000 do container
+    # O env_file carrega todas as variáveis para o Django (SECRET_KEY, etc.)
     env_file:
       - .env
     depends_on:
