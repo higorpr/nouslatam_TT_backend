@@ -1,7 +1,10 @@
 #!/bin/sh
-echo "Awaiting PostgreSQL"
+DB_HOST_TO_CHECK=${DB_HOST:-db}
+DB_PORT_TO_CHECK=${DB_PORT:-5432}
 
-while ! nc -z db 5432; do
+echo "Awaiting PostgreSQL at ${DB_HOST_TO_CHECK}:${DB_PORT_TO_CHECK}..."
+
+while ! nc -z $DB_HOST_TO_CHECK $DB_PORT_TO_CHECK; do
   sleep 0.1
 done
 
