@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.staticfiles',
 
     # Third party apps
@@ -168,17 +167,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS CONFIG
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 
-# CSRF Trusted Origins (Importante para segurança)
-# O Render usa https, então precisamos confiar na origem.
-CSRF_TRUSTED_ORIGINS =
+CSRF_TRUSTED_ORIGINS = []
 if IS_PRODUCTION:
     RENDER_EXTERNAL_URL = os.environ.get('RENDER_EXTERNAL_URL')
     if RENDER_EXTERNAL_URL:
         CSRF_TRUSTED_ORIGINS.append(RENDER_EXTERNAL_URL)
 
-# Adicione seus domínios personalizados aqui também, com https
 CSRF_TRUSTED_ORIGINS_CUSTOM = os.environ.get('CSRF_TRUSTED_ORIGINS_CUSTOM', '').split(',')
-CSRF_TRUSTED_ORIGINS.extend()
+for origin in CSRF_TRUSTED_ORIGINS_CUSTOM:
+    if origin:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 print(f"CSRF_TRUSTED_ORIGINS configured to: {CSRF_TRUSTED_ORIGINS}")
 
