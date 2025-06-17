@@ -4,7 +4,7 @@ from .views import TaskViewSet, DashboardStatsView
 
 app_name = 'tasks'
 
-router = DefaultRouter(trailing_slash=False)
+router = DefaultRouter()
 router.register(r'', TaskViewSet, basename='task')
 
 urlpatterns = [
