@@ -1,58 +1,33 @@
-# --- ESTÁGIO 1: BUILDER ---
-# Usamos uma imagem completa para instalar dependências que precisam de compilação.
-FROM python:3.11-slim as builder
+# Usamos a imagem padrão do Python 3.11, que é mais completa e simples de usar.
+FROM python:3.11
 
-# Define variáveis de ambiente para otimizar o Python e o pip.
+# Define variáveis de ambiente para otimizar o Python em um ambiente de contêiner.
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Define o diretório de trabalho
+# Define o diretório de trabalho dentro do contêiner.
 WORKDIR /app
 
-# Instala dependências do sistema necessárias para compilar pacotes como psycopg2
+# Instala dependências do sistema Linux necessárias para pacotes como psycopg2.
 RUN apt-get update && apt-get install -y build-essential libpq-dev
 
-# Copia apenas o arquivo de dependências para aproveitar o cache do Docker
-COPY . /requirements.txt.
+# Copia o arquivo de dependências primeiro.
+# Isso aproveita o cache do Docker: se o requirements.txt não mudar,
+# o passo de instalação de dependências não será executado novamente.
+COPY ./requirements.txt .
 
-# Instala as dependências Python
-RUN pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt
+# Instala as dependências Python.
+RUN pip install --no-cache-dir -r requirements.txt
 
-
-# --- ESTÁGIO 2: FINAL ---
-# Começamos com uma imagem limpa e enxuta para produção.
-FROM python:3.11-slim
-
-# Define as mesmas variáveis de ambiente
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-WORKDIR /app
-
-# Cria um usuário não-root para rodar a aplicação (melhor prática de segurança)
-RUN addgroup --system app && adduser --system --group app
-
-# Copia as dependências pré-compiladas do estágio builder
-COPY --from=builder /app/wheels /wheels
-COPY --from=builder /app/requirements.txt .
-
-# Instala as dependências a partir das "wheels" locais, o que é muito mais rápido
-RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt
-
-# Copia o código da aplicação e o script de entrypoint
+# Agora, copia todo o resto do código do seu projeto para o contêiner.
 COPY . .
 
-# Garante que o script de entrypoint seja executável
+# Garante que nosso script de inicialização seja executável.
 RUN chmod +x /app/entrypoint.sh
 
-# Muda a propriedade de todos os arquivos para o nosso usuário não-root
-RUN chown -R app:app /app
-
-# Muda para o usuário não-root
-USER app
-
-# Expõe a porta que o Gunicorn vai usar
+# Expõe a porta que o Gunicorn vai usar, para que o Render possa se conectar a ela.
 EXPOSE 8000
 
-# Define o entrypoint que será executado quando o contêiner iniciar
+# Define o script de entrypoint que será executado quando o contêiner iniciar.
+# Ele cuidará das migrações e de coletar os arquivos estáticos.
 ENTRYPOINT ["/app/entrypoint.sh"]
